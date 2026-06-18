@@ -1,0 +1,38 @@
+# Deployment topology for the Pixel Voice Call Service.
+#
+# The pipeline is split into three independently deployable tiers, each running in its
+# own container. The message queue and database are shared backing infrastructure that
+# these tiers connect to (configured via QUEUE_URL / DATABASE_URL).
+
+services:
+  call-service:
+    build: .
+    command: ["call-service"]
+    environment:
+      QUEUE_URL: ${QUEUE_URL:-memory://}
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    deploy:
+      replicas: 1
+
+  worker:
+    build: .
+    command: ["worker"]
+    environment:
+      QUEUE_URL: ${QUEUE_URL:-memory://}
+      POLL_INTERVAL_SECONDS: "5"
+    restart: unless-stopped
+    deploy:
+      replicas: 1
+
+  webhook:
+    build: .
+    command: ["webhook"]
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-memory://}
+    ports:
+      - "8001:8001"
+    restart: unless-stopped
+    deploy:
+      replicas: 1

@@ -1,0 +1,2 @@
+# No third-party dependencies — the simulation uses only the Python standard library.
+# Requires Python 3.10+ (uses PEP 604 union types and modern typing syntax).
