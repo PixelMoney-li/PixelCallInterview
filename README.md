@@ -28,10 +28,13 @@ flowchart LR
 ### Provider constraint: concurrent voice slots
 
 The third-party AI voice platform caps how many calls an account can have **in progress at
-the same time**. Each account has a fixed number of concurrent **voice slots** (for example,
-**15 slots per account**). Placing a call occupies one slot for the duration of the call, and
-the slot is freed when the call ends (i.e. when the webhook fires). If all slots are in use,
-the provider will not accept additional calls until a slot frees up.
+the same time**. Each account comes with a fixed number of concurrent **voice slots**
+(**100 slots per account**); additional slots can be purchased at **$10 per slot**. Placing a
+call occupies one slot for the duration of the call, and the slot is freed when the call ends
+(i.e. when the webhook fires). If all slots are in use, the provider will not accept additional
+calls until a slot frees up.
+
+The **average call lasts about 1 minute**.
 
 ### Do-Not-Call (DNC) list
 
@@ -94,3 +97,5 @@ Usage is growing fast. Call volume is expected to climb through roughly these st
 
 The objective is to keep this pipeline **reliable and responsive** end to end — from request
 intake through to stored results — as throughput grows by roughly **500x**.
+
+Note: each account has 100 concurrent voice slots and the average call lasts ~1 minute.

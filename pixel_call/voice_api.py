@@ -6,11 +6,11 @@ import logging
 import threading
 import time
 
-from .models import CallRequest
+from .models import CallRequest, CallResult
 
 log = logging.getLogger("voice-api")
 
-SLOTS_PER_ACCOUNT = 15
+SLOTS_PER_ACCOUNT = 100
 
 
 class MockVoiceAPI:
@@ -24,6 +24,7 @@ class MockVoiceAPI:
         self._dispatch_latency_seconds = dispatch_latency_seconds
         self._call_duration_seconds = call_duration_seconds
         self._in_flight = 0
+        self._results: dict[str, CallResult] = {}  # the provider's own copy of each finished call
         self._lock = threading.Lock()
 
     def fetch_call_slot(self) -> int:
@@ -36,9 +37,23 @@ class MockVoiceAPI:
             self._in_flight += 1
         time.sleep(self._dispatch_latency_seconds)  # network round-trip to start the call
         log.info("placed call %s to %s", request.call_id, request.destination)
-        # A call holds its slot until it ends; release it when the call finishes.
-        threading.Timer(self._call_duration_seconds, self._release_slot).start()
+        # When the call ends, the provider produces the artifacts and frees the slot.
+        threading.Timer(self._call_duration_seconds, self._complete_call, args=(request,)).start()
 
-    def _release_slot(self) -> None:
+    def fetch_call_result(self, call_id: str) -> CallResult | None:
+        """Read back the artifacts the provider stored for a finished call."""
         with self._lock:
+            return self._results.get(call_id)
+
+    def _complete_call(self, request: CallRequest) -> None:
+        result = CallResult(
+            call_id=request.call_id,
+            destination=request.destination,
+            summary=f"AI summary for call {request.call_id} to {request.destination}",
+            transcript=f"Transcript for call {request.call_id}",
+            recording_url=f"https://recordings.voice-provider.example/{request.call_id}.mp3",
+        )
+        with self._lock:
+            self._results[request.call_id] = result
             self._in_flight -= 1
+        log.info("call %s finished; artifacts stored by provider", request.call_id)
