@@ -24,3 +24,14 @@ class InMemoryDB:
             }
             self.summaries[result.call_id] = result.summary
             self.transcripts[result.call_id] = result.transcript
+
+    def get_call_result(self, call_id: str) -> dict | None:
+        with self._lock:
+            record = self.records.get(call_id)
+            if record is None:
+                return None
+            return {
+                **record,
+                "summary": self.summaries.get(call_id),
+                "transcript": self.transcripts.get(call_id),
+            }

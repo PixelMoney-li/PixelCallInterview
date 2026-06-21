@@ -1,9 +1,12 @@
 FROM python:3.12-slim
 
 WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
 COPY . .
 
-# Standard library only — no dependencies to install.
 ENV PYTHONUNBUFFERED=1
 
-ENTRYPOINT ["python", "-m", "pixel_call.service"]
+ENTRYPOINT ["python", "-m", "pixel_call.entrypoint"]

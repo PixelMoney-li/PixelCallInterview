@@ -5,11 +5,13 @@
 # these tiers connect to (configured via QUEUE_URL / DATABASE_URL).
 
 services:
-  call-service:
+  controller:
     build: .
-    command: ["call-service"]
+    command: ["controller"]
     environment:
       QUEUE_URL: ${QUEUE_URL:-memory://}
+      DATABASE_URL: ${DATABASE_URL:-memory://}
+      PORT: "8000"
     ports:
       - "8000:8000"
     restart: unless-stopped
